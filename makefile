@@ -1,0 +1,17 @@
+.PHONY:clean all
+CC=gcc
+CFLAGS=-Wall -g
+BIN=miniftpd
+OBJS= main.o commsocket.o sckutil.o session.o ftpproto.o privparent.o str.o tunable.o parseconf.o
+LIBS=-lcrypt
+$(BIN):$(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+	
+%.o:%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f *.o $(BIN)
+
+
+
