@@ -4,6 +4,7 @@
 #include "parseconf.h"
 #include "tunable.h"
 #include "ftpproto.h"
+#include "common.h"
 
 void paint_conf()
 {
@@ -57,7 +58,7 @@ int main(void)
 		/*FTP协议状态*/
 		0
 	};
-	
+	signal(SIGCHLD, SIG_IGN);
 	int listenfd = 0;
 	int ret = sckServer_init(tunable_listen_address, tunable_listen_port, &listenfd);
 	int connfd = 0;

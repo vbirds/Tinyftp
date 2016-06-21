@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include <signal.h>
 
 
 #define MINIFTP_CONF  "miniftpd.conf"
