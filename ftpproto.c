@@ -409,6 +409,11 @@ int port_active(session_t *sess)
 {
 	if (sess->port_addr)
 	{
+		 if (pasv_active(sess))
+		 {
+			 fprintf(stderr, "both port and pasv are active");
+			 exit(EXIT_FAILURE);
+		 }
 		return 1;
 	}
 	return 0;
@@ -416,14 +421,24 @@ int port_active(session_t *sess)
 
 int pasv_active(session_t *sess)
 {
+	if (sess->pasv_listen_fd != -1)
+	{
+		if (port_active(sess))
+		{
+			fprintf(stderr, "both port and pasv are active");
+			exit(EXIT_FAILURE);
+		}
+		return 1;
+	}
 	return 0;
 }
 
 int get_transfer_fd(session_t *sess)
 {
 	//判断先前是否接收过PORT或PASV
-	if (!port_active(sess) || pasv_active(sess))
+	if (!port_active(sess) && !pasv_active(sess))
 	{
+		ftp_relply(sess, FTP_BADSENDCONN, "Use PORT or PASV first");
 		return 0;
 	}
 	
@@ -442,13 +457,29 @@ int get_transfer_fd(session_t *sess)
 		sess->data_fd = data_sockfd;
 	}
 	
+	//被动模式
+	if (pasv_active(sess))
+	{
+		int connfd = -1;
+		int ret = sckServer_accept(sess->pasv_listen_fd, &connfd, tunable_accept_timeout);
+		{
+			/*关闭监听套接字*/
+			close(sess->pasv_listen_fd);
+			if (ret != Sck_Ok)
+			{
+
+				return 0;
+			}
+		}
+		sess->data_fd = connfd;
+	}
+	
 	if (sess->port_addr)
 	{
 		free(sess->port_addr);
 		sess->port_addr = NULL;
 	}
-	//被动模式
-	
+
 	return 1;
 }
 
@@ -488,7 +519,30 @@ static void  do_port(session_t *sess)
 }
 static void  do_pasv(session_t *sess)
 {
+	char ip[16] = {0};
+	strcpy(ip, tunable_listen_address);
+	/*监听套接字*/
+	int fd = -1;
+	sckServer_init(ip, 0, &fd);
+	sess->pasv_listen_fd = fd;
 	
+	struct sockaddr_in addr;
+	socklen_t addrlen = sizeof(addr);
+	if (getsockname(fd, (struct sockaddr *)&addr, &addrlen) < 0)
+	{
+		ERR_EXIT("getsockname");
+	}
+	
+	unsigned short port = ntohs(addr.sin_port);
+	
+	//格式化ip和 端口
+	unsigned int v[4];
+	sscanf(ip, "%u.%u.%u.%u", &v[0],&v[1],&v[2],&v[3]);
+	
+	char text[1024] = {0};
+	sprintf(text, "Entering Passive Mode (%u,%u,%u,%u,%u,%u).", v[0],v[1],v[2],v[3], port>>8, port&0xFF);
+	
+	ftp_relply(sess, FTP_PASVOK, text);
 }
 static void  do_type(session_t *sess)
 {
