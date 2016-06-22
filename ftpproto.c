@@ -9,6 +9,7 @@
 #include "str.h"
 #include "ftpcodes.h"
 #include "tunable.h"
+#include "privsock.h"
 
 
 void ftp_relply(session_t *sess, int status, const char *text);
@@ -19,6 +20,9 @@ int list_common(session_t *sess); /*列出目录*/
 int get_transfer_fd(session_t *sess);
 int port_active(session_t *sess);
 int pasv_active(session_t *sess);
+
+int get_port_fd(session_t *sess);
+int get_pasv_fd(session_t *sess);
 
 static void  do_user(session_t *sess);
 static void  do_pass(session_t *sess);
@@ -433,8 +437,49 @@ int pasv_active(session_t *sess)
 	return 0;
 }
 
-int get_transfer_fd(session_t *sess)
+
+int get_port_fd(session_t *sess)
 {
+	priv_sock_send_cmd(sess->child_fd, PRIV_SOCK_GET_DATA_SOCK);
+	unsigned short port = ntohs(sess->port_addr->sin_port);
+	char *ip = inet_ntoa(sess->port_addr->sin_addr);
+	/*发送端口*/
+	priv_sock_send_int(sess->child_fd, (int)port);
+	/*发送ip*/
+	priv_sock_send_buf(sess->child_fd, ip, strlen(ip));
+	/*接受应答*/
+	char res = priv_sock_get_result(sess->child_fd);
+	if (res == PRIV_SOCK_RESULT_BAD)
+	{
+		return 0;
+	}
+	else if (res == PRIV_SOCK_RESULT_OK)
+	{
+		/*接收文件描述符*/
+		sess->data_fd = priv_sock_recv_fd(sess->child_fd);
+	}
+	
+	return 1;
+}
+
+int get_pasv_fd(session_t *sess)
+{
+	int connfd = -1;
+	int ret = sckServer_accept(sess->pasv_listen_fd, &connfd, tunable_accept_timeout);
+	{
+		/*关闭监听套接字*/
+		close(sess->pasv_listen_fd);
+		if (ret != Sck_Ok)
+		{
+			return 0;
+		}
+	}
+	sess->data_fd = connfd;
+}
+
+int get_transfer_fd(session_t *sess)
+{ 
+	int  ret = 1;
 	//判断先前是否接收过PORT或PASV
 	if (!port_active(sess) && !pasv_active(sess))
 	{
@@ -444,6 +489,8 @@ int get_transfer_fd(session_t *sess)
 	
 	//创建数据套接字
 	/*如果是主动模式*/
+	
+	/*
 	void *handle = NULL;
 	int data_sockfd = 0;
 	if (port_active(sess))
@@ -456,6 +503,12 @@ int get_transfer_fd(session_t *sess)
 		}
 		sess->data_fd = data_sockfd;
 	}
+	*/
+	/*创建数据套接字失败*/
+	if (get_port_fd(sess) == 0)
+	{ 
+		ret = 0;
+	}
 	
 	//被动模式
 	if (pasv_active(sess))
@@ -467,18 +520,17 @@ int get_transfer_fd(session_t *sess)
 			close(sess->pasv_listen_fd);
 			if (ret != Sck_Ok)
 			{
-
 				return 0;
 			}
 		}
 		sess->data_fd = connfd;
 	}
 	
-	if (sess->port_addr)
-	{
-		free(sess->port_addr);
-		sess->port_addr = NULL;
-	}
+		if (sess->port_addr)
+		{
+			free(sess->port_addr);
+			sess->port_addr = NULL;
+		}
 
 	return 1;
 }
@@ -523,6 +575,7 @@ static void  do_port(session_t *sess)
 	p[3] = v[5];
 	
 	ftp_relply(sess, FTP_PORTOK, "PORT command successful. Consider using PASV");
+	
 }
 static void  do_pasv(session_t *sess)
 {
