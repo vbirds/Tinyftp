@@ -485,7 +485,14 @@ int get_transfer_fd(session_t *sess)
 
 static void  do_cwd(session_t *sess)
 {
+	char *cwdir = sess->arg;
+	//更改用户目录
+	if ( chdir(cwdir) < 0 )
+	{
+		ERR_EXIT("chdir");
+	}	
 	
+	ftp_relply(sess, FTP_CWDOK,"Directory successfully changed.");
 }
 static void  do_cdup(session_t *sess)
 {
