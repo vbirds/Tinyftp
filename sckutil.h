@@ -32,6 +32,8 @@
 
 int getlocalip(char *ip);	  
 
+int tcp_client(const char *address, unsigned short port);
+
 int activate_nonblock(int fd);
 int deactivate_nonblock(int fd);
 

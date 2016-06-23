@@ -7,12 +7,14 @@
 #include <time.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/syscall.h> 
 #include <unistd.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <linux/capability.h>
 
 #include <signal.h>
 

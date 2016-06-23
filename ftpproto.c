@@ -425,6 +425,7 @@ int port_active(session_t *sess)
 
 int pasv_active(session_t *sess)
 {
+	/*
 	if (sess->pasv_listen_fd != -1)
 	{
 		if (port_active(sess))
@@ -434,6 +435,20 @@ int pasv_active(session_t *sess)
 		}
 		return 1;
 	}
+	*/
+	/*向nobody进程请求是否处于被动模式*/
+	priv_sock_send_cmd(sess->child_fd, PRIV_SOCK_PASV_ACTIVE);
+	int  active = priv_sock_get_int(sess->child_fd);
+	if (active)
+	{
+		if (port_active(sess))
+		{
+			fprintf(stderr, "both port and pasv are active");
+			exit(EXIT_FAILURE);
+		}
+		return 1;
+	}
+	
 	return 0;
 }
 
@@ -464,17 +479,18 @@ int get_port_fd(session_t *sess)
 
 int get_pasv_fd(session_t *sess)
 {
-	int connfd = -1;
-	int ret = sckServer_accept(sess->pasv_listen_fd, &connfd, tunable_accept_timeout);
+	priv_sock_send_cmd(sess->child_fd, PRIV_SOCK_PASV_ACCETP);
+	char res = priv_sock_get_result(sess->child_fd);
+	if (res == PRIV_SOCK_RESULT_BAD)
 	{
-		/*关闭监听套接字*/
-		close(sess->pasv_listen_fd);
-		if (ret != Sck_Ok)
-		{
-			return 0;
-		}
+		return 0;
 	}
-	sess->data_fd = connfd;
+	else if (res == PRIV_SOCK_RESULT_OK)
+	{
+		sess->data_fd = priv_sock_recv_fd(sess->child_fd);
+	}
+	
+	return 1;
 }
 
 int get_transfer_fd(session_t *sess)
@@ -504,19 +520,24 @@ int get_transfer_fd(session_t *sess)
 		sess->data_fd = data_sockfd;
 	}
 	*/
-	/*创建数据套接字失败*/
-	if (get_port_fd(sess) == 0)
-	{ 
-		ret = 0;
+	if (port_active(sess))
+	{
+		/*创建数据套接字失败*/
+		if (get_port_fd(sess) == 0)
+		{ 
+			ret = 0;
+		}		
 	}
+
 	
 	//被动模式
 	if (pasv_active(sess))
 	{
+		/*
 		int connfd = -1;
 		int ret = sckServer_accept(sess->pasv_listen_fd, &connfd, tunable_accept_timeout);
 		{
-			/*关闭监听套接字*/
+			//关闭监听套接字
 			close(sess->pasv_listen_fd);
 			if (ret != Sck_Ok)
 			{
@@ -524,13 +545,21 @@ int get_transfer_fd(session_t *sess)
 			}
 		}
 		sess->data_fd = connfd;
+		*/
+		if (get_pasv_fd(sess) == 0)
+		{
+			return 0;
+		}
 	}
 	
+	if (ret == 0)
+	{
 		if (sess->port_addr)
 		{
 			free(sess->port_addr);
 			sess->port_addr = NULL;
 		}
+	}
 
 	return 1;
 }
@@ -581,7 +610,9 @@ static void  do_pasv(session_t *sess)
 {
 	char ip[16] = {0};
 	strcpy(ip, tunable_listen_address);
+	
 	/*监听套接字*/
+	/*
 	int fd = -1;
 	sckServer_init(ip, 0, &fd);
 	sess->pasv_listen_fd = fd;
@@ -592,8 +623,11 @@ static void  do_pasv(session_t *sess)
 	{
 		ERR_EXIT("getsockname");
 	}
+	*/
+	priv_sock_send_cmd(sess->child_fd, PRIV_SOCK_PASV_LISTEN);
+	unsigned short port = (int)priv_sock_get_int(sess->child_fd);
 	
-	unsigned short port = ntohs(addr.sin_port);
+	//unsigned short port = ntohs(addr.sin_port);
 	
 	//格式化ip和 端口
 	unsigned int v[4];

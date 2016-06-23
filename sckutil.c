@@ -18,7 +18,40 @@ int getlocalip(char *ip)
 	return 0;
 }
 
-#include "sckutil.h"
+int tcp_client(const char *address, unsigned short port)
+{
+	int sock;
+	sock = socket(PF_INET, SOCK_STREAM, 0);
+	if (sock < 0)
+	{
+		ERR_EXIT("tcp_client");
+	}
+
+	if (port > 0)
+	{
+		struct sockaddr_in localaddr;
+		memset(&localaddr, 0, sizeof(localaddr));
+		localaddr.sin_family = AF_INET;
+		localaddr.sin_port = htons(port);
+		inet_pton(AF_INET, address, &localaddr.sin_addr);		
+		
+		int on = 1;
+		int ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+		if (ret < 0)
+		{
+			ret = errno;
+			ERR_EXIT("setsockopt");
+		}
+		ret = bind(sock, (struct sockaddr*) &localaddr, sizeof(localaddr));
+		if (ret < 0)
+		{
+			ret = errno;
+			ERR_EXIT("bind");
+		}		
+	}
+	
+	return sock;
+}
 
 /* read函数的调用方法
 int ret;

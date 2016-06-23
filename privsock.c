@@ -101,45 +101,27 @@ char priv_sock_get_result(int fd)
 /*发送一个整数*/
 void priv_sock_send_int(int fd, int the_int)
 {
-	char *p_num = (char *)malloc(sizeof(int));
-	*p_num = the_int;
-	
 	int ret = 0;
-	ret = writen(fd, &p_num, sizeof(p_num));
-	if (ret != sizeof(p_num))
+	ret = writen(fd, &the_int, sizeof(the_int));
+	if (ret != sizeof(the_int))
 	{
 		fprintf(stderr, "priv_sock_send_result error");
 		exit(EXIT_FAILURE);
-	}
-	/*释放内存*/
-	if (p_num)
-	{
-		free(p_num);
-		p_num = NULL;
 	}
 }
 /*接收一个整数*/
 int priv_sock_get_int(int fd)
 {
-	char *p_num =(char *)malloc(sizeof(int));
 	int the_int = 0;
 	
 	int ret = 0;
-	ret = readn(fd, &p_num, sizeof(p_num));
-	if (ret != sizeof(p_num))
+	ret = readn(fd, &the_int, sizeof(the_int));
+	if (ret != sizeof(the_int))
 	{
 		fprintf(stderr, "priv_sock_get_int error");
 		exit(EXIT_FAILURE);
 	}	
 	
-	the_int = *((int *)p_num);
-	
-	/*释放内存*/
-	if (p_num)
-	{
-		free(p_num);
-		p_num = NULL;
-	}	
 	return the_int;
 }
 
