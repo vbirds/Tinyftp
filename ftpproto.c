@@ -683,7 +683,7 @@ static void  do_mkd(session_t *sess)
 	}/*end else*/
 	ftp_relply(sess, FTP_MKDIROK, text);	
 }
-
+/*删除空目录*/
 static void  do_rmd(session_t *sess)
 {
 	const char *path = sess->arg;
@@ -700,10 +700,25 @@ static void  do_rmd(session_t *sess)
 	}
 	ftp_relply(sess, FTP_RMDIROK, "Remove directory operation successful.");//250	
 }
+
+/*删除文件*/
 static void  do_dele(session_t *sess)
 {
-
+	const char *path = sess->arg;
+	if (path == NULL)
+	{
+		ftp_relply(sess, FTP_NOPERM, "Delete operation failed."); //550
+		return;
+	}
+	int ret = remove(path);
+	if (ret < 0)
+	{
+		ftp_relply(sess, FTP_NOPERM, "Delete operation failed."); //550
+		return;				
+	}
+	ftp_relply(sess, FTP_DELEOK, "Delete operation successful."); //250
 }
+
 static void  do_rnfr(session_t *sess)
 {
 	
