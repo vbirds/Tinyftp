@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include <netdb.h>
 
@@ -50,6 +52,10 @@ ssize_t readline(int sockfd, void *buf, size_t maxline);
 
 void send_fd(int sock_fd, int fd_to_send);
 int recv_fd(const int sock_fd);
+
+/*获取权限位信息*/
+const char* statbuf_get_perms(struct stat *sbuf);
+const char* statbuf_get_date(struct stat *sbuf);
 
 
 #endif /* _SYS_UTIL_H_ */
