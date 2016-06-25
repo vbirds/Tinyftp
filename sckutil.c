@@ -784,3 +784,87 @@ const char* statbuf_get_date(struct stat *sbuf)
 	
 	return datebuf;
 }
+
+int lock_internal(int fd, int lock_type)
+{
+	int ret = 0;
+	struct flock the_lock;
+	memset(&the_lock, 0, sizeof(the_lock));
+	
+	the_lock.l_type = lock_type;/*锁类型*/
+	the_lock.l_whence = SEEK_SET; /*加锁位置*/
+	the_lock.l_start = 0;/*加锁偏移位置*/
+	the_lock.l_len = 0;
+	
+	/*防止信号中断*/
+	do  
+	{
+		ret = fcntl(fd, F_SETLKW, &the_lock);
+	}
+	while (ret < 0 && errno == EINTR);
+	
+	return ret;	
+}
+
+//读锁
+int lock_file_read(int fd)
+{
+	return lock_internal(fd, F_RDLCK);
+}
+//写锁
+int lock_file_write(int fd)
+{
+	return lock_internal(fd, F_WRLCK);
+}
+//解锁
+int unlock_file(int fd)
+{
+	int ret = 0;
+	struct flock the_lock;
+	memset(&the_lock, 0, sizeof(the_lock));
+	
+	the_lock.l_type = F_UNLCK;/*锁类型 解锁*/
+	the_lock.l_whence = SEEK_SET; /*加锁位置*/
+	the_lock.l_start = 0;/*加锁偏移位置*/
+	the_lock.l_len = 0;
+	
+	/*非阻塞模式*/
+	ret = fcntl(fd, F_SETLK, &the_lock);
+
+	return ret;	
+}
+
+static struct timeval s_curr_time;
+long get_time_sec()
+{
+	int ret = gettimeofday(&s_curr_time, NULL);
+	if (ret < 0)
+	{
+		ERR_EXIT("gettimeofday");
+	}
+	return s_curr_time.tv_sec;
+	
+}
+
+long get_time_usec()
+{
+	return s_curr_time.tv_usec;	
+}
+
+/*睡眠规定时间*/
+void nano_sleep(double seconds)
+{
+	time_t secs = (time_t)seconds;//整数部分
+	double fractional = seconds - (double)secs;//小数部分
+	
+	struct timespec ts;
+	ts.tv_sec = secs;
+	ts.tv_nsec = (long)(fractional*(double)1000000000); //纳秒 9个0
+	
+	int ret;
+	do
+	{
+		ret = nanosleep(&ts, &ts);
+	}
+	while (ret == -1 && ret == EINTR);
+}

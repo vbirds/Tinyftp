@@ -17,12 +17,20 @@ typedef struct session
 	int pasv_listen_fd;
 	int data_fd;
 	
+	//限速
+	unsigned int bw_upload_rate_max;
+	unsigned int bw_download_rate_max;
+	long bw_transfer_start_sec;
+	long bw_transfer_start_usec;
+	
 	//父子进程通道
 	int parent_fd;
 	int child_fd;
 	
 	//FTP协议状态
 	int is_ascii;
+	long long restart_pos; //设置断点续传
+	char *rnfr_name;
 	
 } session_t;
 
