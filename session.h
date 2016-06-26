@@ -16,6 +16,7 @@ typedef struct session
 	struct sockaddr_in *port_addr;
 	int pasv_listen_fd;
 	int data_fd;
+	int data_process;  /*当前有没处于传输数据的状态*/
 	
 	//限速
 	unsigned int bw_upload_rate_max;

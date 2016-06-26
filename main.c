@@ -32,7 +32,7 @@ void paint_conf()
 	}
 }
 
-
+extern session_t *p_sess;
 int main(void)
 {
 	
@@ -52,7 +52,7 @@ int main(void)
 		/*控制连接*/
 		0,-1,"","","",
 		/*数据连接*/
-		NULL,-1,-1,
+		NULL,-1,-1,0,
 		/*限速*/
 		0,0,0,0,
 		/*父子进程通道*/
@@ -60,6 +60,7 @@ int main(void)
 		/*FTP协议状态*/
 		0,0,NULL
 	};
+	p_sess = &sess;
 	
 	sess.bw_upload_rate_max = tunable_upload_max_rate;
 	sess.bw_download_rate_max = tunable_download_max_rate;
