@@ -32,6 +32,7 @@ typedef struct session
 	int is_ascii;
 	long long restart_pos; //设置断点续传
 	char *rnfr_name;
+	int abor_received;
 	
 } session_t;
 

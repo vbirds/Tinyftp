@@ -14,8 +14,7 @@ long long str_tolonglong(const char *str);
 
 unsigned int str_octal_to_uint(const char *str);
 
-/* 把字符串yes或no转换成整形, 错误返回-1 
- */
+/* 把字符串yes或no转换成整形, 错误返回-1 */
 int yesno_to_int(char *str);
 
 #endif /*_STR_H_*/

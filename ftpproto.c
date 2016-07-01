@@ -14,9 +14,12 @@
 #include "privsock.h"
 
 void handle_alarm_timeout(int sig);
+void handle_sigurg(int sig);
 void handle_sigalrm(int sig);
 void start_cmdio_alarm(void);
 void start_data_alarm(void);
+
+void check_abor(session_t *sess);
 
 void ftp_relply(session_t *sess, int status, const char *text);
 void ftp_lrelply(session_t *sess, int status, const char *text);
@@ -139,6 +142,47 @@ void handle_sigalrm(int sig)
 	//否则，当前处于数据传输的状态收到了超时信号
 	p_sess->data_process = 0;
 	start_data_alarm();
+}
+
+void handle_sigurg(int sig)
+{
+	if (p_sess->data_fd == -1)
+	{
+		return;
+	}
+	
+	//处于数据传输状态
+	char cmdline[MAX_COMMAND_LINE] = {0};
+	int ret = readline(p_sess->ctrl_fd, cmdline, MAX_COMMAND_LINE);
+	if (ret <= 0)
+	{
+		ERR_EXIT("readline");
+	}
+	str_trim_crlf(cmdline);
+	/*判断是否ABOR命令*/
+	if (strcmp(cmdline, "ABOR") == 0
+		|| strcmp(cmdline,"\377\364\377\362ABOR") == 0)
+	{
+		p_sess->abor_received = 1;
+		//断开数据连接通道
+		shutdown(p_sess->data_fd, SHUT_RDWR);
+	}
+	else //错误命令
+	{
+		//500
+		ftp_relply(p_sess, FTP_BADCMD, "Unknown command");
+	}
+	
+}
+/*检查ABOR是否接收*/
+void check_abor(session_t *sess)
+{
+	if (sess->abor_received == 1)
+	{
+		sess->abor_received = 0;
+		//226
+		ftp_relply(sess, FTP_ABOROK, "ABOR successful");
+	}
 }
 
 void start_cmdio_alarm(void)
@@ -419,7 +463,7 @@ void upload_common(session_t *sess, int is_apped)
 			return;				
 		}
 	}
-	else if (!is_apped && offset != 0) //APPE模式
+	else if (!is_apped && offset != 0) //REST + STOR 
 	{
 		if (lseek(fd, offset, SEEK_SET) < 0)
 		{
@@ -427,7 +471,7 @@ void upload_common(session_t *sess, int is_apped)
 			return;			
 		}
 	}
-	else if (is_apped)
+	else if (is_apped)//APPE模式
 	{
 		if (lseek(fd, 0, SEEK_END) < 0)
 		{
@@ -480,6 +524,12 @@ void upload_common(session_t *sess, int is_apped)
 		
 		//限速
 		limit_rate(sess, ret, 1);
+		if (sess->abor_received == 1)
+		{
+			//426
+			flag = 1;
+			break;
+		}
 		
 		if (writen(fd, buf, ret) != ret)
 		{
@@ -487,6 +537,7 @@ void upload_common(session_t *sess, int is_apped)
 			break;
 		}
 	}
+
 	
 	//关闭数据连接套接字
 	close(sess->data_fd);
@@ -509,6 +560,9 @@ void upload_common(session_t *sess, int is_apped)
 		//451
 		ftp_relply(sess, FTP_BADSENDFILE, "Failure recving to network stream.");
 	}
+	
+	/*检查是否接收ABOR*/
+	check_abor(sess);
 	
 	/*重新开启控制连接闹钟*/
 	start_cmdio_alarm();
@@ -603,6 +657,11 @@ static void  do_pass(session_t *sess)
 	
 	// 登入成功
 	ftp_relply(sess, FTP_LOGINOK, "Login successful");
+	
+	//接收SIGURG
+	signal(SIGURG, handle_sigurg);
+	/*开启接收SIGURG*/
+	activate_sigurg(sess->ctrl_fd);
 	
 	//将当前进程用户更改为 登入用户
 	if (setegid(pw->pw_gid) < 0)
@@ -805,7 +864,9 @@ static void  do_cdup(session_t *sess)
 }
 static void  do_quit(session_t *sess)
 {
-	
+	//221应答
+	ftp_relply(sess, FTP_GOODBYE, "Goodbye.");
+	exit(EXIT_SUCCESS);
 }
 static void  do_port(session_t *sess)
 {
@@ -960,6 +1021,11 @@ static void  do_retr(session_t *sess)
 		}/*end if*/
 		/*限速*/
 		limit_rate(sess, bytes, 0);
+		if (sess->abor_received == 1)
+		{
+			flag = 1;
+			break;
+		}
 		bytes_to_send -= bytes;
 	}/*end while*/
 	if (bytes_to_send == 0)
@@ -978,11 +1044,19 @@ static void  do_retr(session_t *sess)
 		//226
 		ftp_relply(sess, FTP_TRANSFEROK, "Transfer complete.");
 	}
+	if (flag == 1)
+	{
+		//426
+		ftp_relply(sess, FTP_TRANSFEROK, "Failure reading from local file");
+	}
 	else if (flag == 2)
 	{
 		//451
 		ftp_relply(sess, FTP_BADSENDFILE, "Failure writting to network stream.");
 	}
+	
+	check_abor(sess);
+	
 	/*重新开启控制连接闹钟*/
 	start_cmdio_alarm();
 }
@@ -1041,7 +1115,11 @@ static void  do_rest(session_t *sess)
 
 static void  do_abor(session_t *sess)
 {
+	//225
 	
+	//226
+	
+	//426 226
 }
 static void  do_pwd(session_t *sess)
 {
@@ -1247,9 +1325,18 @@ static void  do_stat(session_t *sess)
 }
 static void  do_noop(session_t *sess)
 {
-	
+	//FTP_NOOPOK 200
+	ftp_relply(sess, FTP_NOOPOK, "NOOP ok");
 }
+
 static void  do_help(session_t *sess)
 {
+	ftp_lrelply(sess, FTP_HELP, "The following commands are recognized.");
 	
+	ftp_frelply(sess, "ABOR ACCT ALLO APPE CDUP CWD  DELE EPRT EPSV FEAT HELP LIST MDTM MKD");
+	ftp_frelply(sess, "MODE NLST NOOP OPTS PASS PASV PORT PWD  QUIT REIN REST RETR RMD  RNFR");
+	ftp_frelply(sess, "RNTO SITE SIZE SMNT STAT STOR STOU STRU SYST TYPE USER XCUP XCWD XMKD");
+	ftp_frelply(sess, "XPWD XRMD");
+	
+	ftp_relply(sess, FTP_HELP, "Help OK.");
 }

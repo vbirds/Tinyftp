@@ -868,3 +868,27 @@ void nano_sleep(double seconds)
 	}
 	while (ret == -1 && ret == EINTR);
 }
+
+//开启fd接收带外数据
+void activate_oobinline(int fd)
+{
+	int oob_inline = 1;
+	int ret;
+	ret = setsockopt(fd, SOL_SOCKET, SO_OOBINLINE, &oob_inline, sizeof(oob_inline));
+	if (ret == -1)
+	{
+		ERR_EXIT("setsockopt");
+	}
+}
+
+/*开启接收SIGURG（当fd有带外数据是，将产生SIGURG信号*/
+/*该函数设定当前进程能够接收fd所产生的SIGURG信号*/
+void activate_sigurg(int fd)
+{
+	int ret = 0;
+	ret = fcntl(fd, F_SETOWN, getpid());
+	if (ret == -1)
+	{
+		ERR_EXIT("fcntl");
+	}
+}

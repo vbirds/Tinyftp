@@ -7,6 +7,9 @@
 
 void begin_session(session_t *sess)
 {	
+	/*开启接收带外数据*/
+	activate_oobinline(sess->ctrl_fd);
+
 /*
 	int sockfds[2];
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockfds) < 0)

@@ -58,7 +58,7 @@ int main(void)
 		/*父子进程通道*/
 		-1,-1,
 		/*FTP协议状态*/
-		0,0,NULL
+		0,0,NULL,0
 	};
 	p_sess = &sess;
 	
