@@ -545,10 +545,11 @@ void upload_common(session_t *sess, int is_apped)
 	close(fd);
 	
 	//传输完毕 发送226
-	if (flag == 0)
+	if (flag == 0 && !sess->abor_received)
 	{
 		//226
 		ftp_relply(sess, FTP_TRANSFEROK, "Transfer complete.");
+		
 	}
 	else if (flag == 1)
 	{
@@ -561,7 +562,7 @@ void upload_common(session_t *sess, int is_apped)
 		ftp_relply(sess, FTP_BADSENDFILE, "Failure recving to network stream.");
 	}
 	
-	/*检查是否接收ABOR*/
+	/*检查是否接收ABOR  426*/
 	check_abor(sess);
 	
 	/*重新开启控制连接闹钟*/
@@ -1039,7 +1040,7 @@ static void  do_retr(session_t *sess)
 	close(fd);
 	
 	//传输完毕 发送226
-	if (flag == 0)
+	if (flag == 0 && !sess->abor_received)
 	{
 		//226
 		ftp_relply(sess, FTP_TRANSFEROK, "Transfer complete.");
@@ -1116,9 +1117,9 @@ static void  do_rest(session_t *sess)
 static void  do_abor(session_t *sess)
 {
 	//225
-	
+	ftp_relply(sess, FTP_ABOR_NOCONN, "No transfer to ABOR.");
 	//226
-	
+	 
 	//426 226
 }
 static void  do_pwd(session_t *sess)
