@@ -1306,19 +1306,95 @@ static void  do_size(session_t *sess)
 
 static void  do_stat(session_t *sess)
 {
+	if (sess->arg)
+	{
+		ftp_lrelply(sess, FTP_STATFILE_OK, "Status follows:");
 	
-	ftp_lrelply(sess, FTP_STATFILE_OK, "Status follows:");
+		//发送信息
+		char buf[1024] = {0};
+		struct stat sbuf;
+		memset(&sbuf, 0, sizeof(sbuf));
+		
+		file_stat(sess->arg, buf, &sbuf);
+		writen(sess->ctrl_fd, buf, strlen(buf));
+		
+		
+		ftp_relply(sess, FTP_STATFILE_OK, "End of status");
 	
-	//发送信息
-	char buf[1024] = {0};
-	struct stat sbuf;
-	memset(&sbuf, 0, sizeof(sbuf));
+	}
+	char text[1024] = {0};
 	
-	file_stat(sess->arg, buf, &sbuf);
-	writen(sess->ctrl_fd, buf, strlen(buf));
+	ftp_lrelply(sess, FTP_STATOK, "FTP server status:");
 	
+	//连接ip
+	char *ip = get_sock_addr(sess->ctrl_fd);
+	sprintf(text,
+		"Connected to %s",
+		ip
+		);
+	ftp_frelply(sess, text);	
 	
-	ftp_relply(sess, FTP_STATFILE_OK, "End of status");
+	//登入用户
+	struct passwd *pw = getpwuid(sess->uid);
+	memset(text, 0, sizeof(text));
+	sprintf(text,
+		"Logged in as %s",
+		pw->pw_name
+		);
+	ftp_frelply(sess, text);
+	
+	//ascii ?
+	if (sess->is_ascii)
+	{
+		ftp_frelply(sess, "TYPE: ASCII");
+	}
+	else
+	{
+		ftp_frelply(sess, "TYPE: BINARY");
+	}
+	//上传下载速率
+	if (sess->bw_download_rate_max >0)
+	{
+		memset(text, 0, sizeof(text));
+		sprintf(text,
+			"session download limit in byte/s is %u",
+			sess->bw_download_rate_max
+			);
+		ftp_frelply(sess, text);
+	}
+	if (sess->bw_upload_rate_max > 0)
+	{
+		memset(text, 0, sizeof(text));
+		sprintf(text,
+			"session upload limit in byte/s is %u",
+			sess->bw_upload_rate_max
+			);
+		ftp_frelply(sess, text);		
+	}
+	// session_timeout
+	if (tunable_idle_session_timeout > 0)
+	{
+		memset(text, 0, sizeof(text));
+		sprintf(text,
+			"Session timeout in seconds is %u",
+			tunable_idle_session_timeout
+			);
+		ftp_frelply(sess, text);			
+	}
+	
+	ftp_frelply(sess, "Control connection is plain text");
+	ftp_frelply(sess, "Data connections will be plain text");
+	
+	memset(text, 0, sizeof(text));
+	sprintf(text,
+		"At session startup, client count was %d",
+		sess->num_clients
+		);	
+	ftp_frelply(sess, text);
+	
+	ftp_frelply(sess, "Tinyftp 1.0 - secure, fast, stable");
+
+	ftp_relply(sess, FTP_STATOK, "End of status");
 
 }
 static void  do_noop(session_t *sess)

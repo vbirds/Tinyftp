@@ -18,19 +18,23 @@ int getlocalip(char *ip)
 	return 0;
 }
 
-/*获取socket_ip地址 (int类型)*/
-unsigned int get_sock_addr(int sockfd)
+/*获取socket_ip地址 */
+char*  get_sock_addr(int sockfd)
 {
 	struct sockaddr_in addr;
-	socklen_t len;
+	socklen_t len = sizeof(addr);
+	char *ip = NULL;
 	
 	int ret = getpeername(sockfd, (struct sockaddr*)&addr, &len);
 	if (ret == -1)
 	{
 		ERR_EXIT("get_sock_addr");
 	}
+	ip = (char*)malloc(32);
 	
-	return addr.sin_addr.s_addr;
+	inet_ntop(AF_INET, (void*)&(addr.sin_addr), ip, INET_ADDRSTRLEN);
+	
+	return ip;
 }
 
 int tcp_client(const char *address, unsigned short port)

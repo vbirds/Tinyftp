@@ -34,8 +34,8 @@
 
 /*获取本机IP*/
 int getlocalip(char *ip);	  
-/*获取socket_ip地址(int类型)*/
-unsigned int get_sock_addr(int sockfd);
+/*获取socket_ip地址*/
+char* get_sock_addr(int sockfd);
 
 /*创建客户端监听套接字*/
 int tcp_client(const char *address, unsigned short port);
