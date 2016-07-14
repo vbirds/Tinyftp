@@ -236,13 +236,13 @@ void handle_child(session_t *sess)
 			exit(EXIT_SUCCESS);
 		}
 		
-		printf("cmdline=[%s]\n", sess->cmdline);
+		//printf("cmdline=[%s]\n", sess->cmdline);
 		//去除\r\n
 		str_trim_crlf(sess->cmdline);
-		printf("cmdline=[%s]\n", sess->cmdline);
+		//printf("cmdline=[%s]\n", sess->cmdline);
 		//解析TFP命令和参数
 		str_split(sess->cmdline, sess->cmd, sess->arg, ' ');
-		printf("cmd=[%s] arg=[%s]\n", sess->cmd, sess->arg);
+		//printf("cmd=[%s] arg=[%s]\n", sess->cmd, sess->arg);
 		//将命令转换为大写
 		str_upper(sess->cmd);
 		//处理FTP命令

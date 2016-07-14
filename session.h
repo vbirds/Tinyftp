@@ -36,6 +36,7 @@ typedef struct session
 	
 	//连接数限制
 	unsigned int num_clients;
+	unsigned int num_this_ip;
 	
 } session_t;
 

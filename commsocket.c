@@ -381,11 +381,17 @@ int sckServer_init(const char *address, int port, int *listenfd)
  * 返回：如果成功返回0 ，失败返回<0 或者 成功发送的数据的字节大小。
  * */
 
-int sckServer_accept(int listenfd, int *connfd, int timeout)
+int sckServer_accept(int listenfd, int *connfd, void *addr, int timeout)
 {
 	int ret = 0;
+	struct sockaddr_in *p_addr = NULL;
+	if (addr != NULL)
+	{
+		p_addr = (struct sockaddr_in*)addr;
+	}
+	 
     //
-	ret = accept_timeout(listenfd, NULL, (unsigned int) timeout);
+	ret = accept_timeout(listenfd, p_addr, (unsigned int) timeout);
 	if (ret < 0)
 	{
 		if (ret == -1 && errno == ETIMEDOUT)

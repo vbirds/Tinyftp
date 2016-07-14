@@ -166,7 +166,7 @@ static void privop_pasv_listen(session_t *sess)
 static void privop_pasv_accept(session_t *sess)
 {
 	int connfd = -1;
-	int ret = sckServer_accept(sess->pasv_listen_fd, &connfd, tunable_accept_timeout);
+	int ret = sckServer_accept(sess->pasv_listen_fd, &connfd, NULL, tunable_accept_timeout);
 	
 	//关闭监听套接字
 	close(sess->pasv_listen_fd);

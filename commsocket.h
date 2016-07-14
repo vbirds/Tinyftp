@@ -2,7 +2,6 @@
 #define _SCK_CLINT_H_
 
 
-
 #ifdef __cplusplus
 extern 'C'
 {
@@ -37,7 +36,7 @@ int sckClient_destroy(void *handle);
 
 //服务器端初始化
 int sckServer_init(const char *address, int port, int *listenfd);
-int sckServer_accept(int listenfd, int *connfd,  int timeout);
+int sckServer_accept(int listenfd, int *connfd, void *addr, int timeout);
 //服务器端发送报文
 int sckServer_send(int connfd,  unsigned char *data, int datalen, int timeout);
 //服务器端端接受报文
