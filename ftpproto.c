@@ -1118,9 +1118,6 @@ static void  do_abor(session_t *sess)
 {
 	//225
 	ftp_relply(sess, FTP_ABOR_NOCONN, "No transfer to ABOR.");
-	//226
-	 
-	//426 226
 }
 static void  do_pwd(session_t *sess)
 {

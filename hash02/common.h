@@ -11,10 +11,6 @@
 #include <unistd.h>
 #include <sys/sendfile.h>
 
-#include <sys/types.h>
-#include <sys/wait.h>
-
-
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -22,7 +18,6 @@
 #include <netdb.h>
 #include <linux/capability.h>
 
-#include <signal.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>

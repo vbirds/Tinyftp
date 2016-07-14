@@ -34,6 +34,9 @@ typedef struct session
 	char *rnfr_name;
 	int abor_received;
 	
+	//连接数限制
+	unsigned int num_clients;
+	
 } session_t;
 
 void begin_session(session_t *sess);
