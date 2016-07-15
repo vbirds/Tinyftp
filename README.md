@@ -21,6 +21,7 @@ sudo ./build.sh
 ```
 ÔËÐÐ
 ```bash?linenums=NULL
+cd /bin
 sudo ./tinyftpd
 ```
 
