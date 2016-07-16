@@ -44,7 +44,7 @@ sudo ./tinyftpd
 |tunable_download_max_rate 	    |最大下载速度（byte/s）|
 |tunable_listen_address	        |FTP服务器IP地址 |
 
-### LICENCE
+### LICENSE
 软件遵循MIT开源协议
 ### 致谢
 在开发过程中参考了vsftpd的源码，从中学到了许多知识，特此声明，表示感谢
