@@ -88,7 +88,9 @@ unsigned int str_octal_to_uint(const char *str)
         {
             break;
         }
-        if (digit != '0')
+		
+		// 判断数字非 '0' 应该只对第一位字符有效
+        if ((p - str) > 0)
         {
             num <<= 3;
             num += (digit - '0');
