@@ -31,6 +31,24 @@ void str_split(const char *str, char *left, char *right, char limit)
 
 int str_all_space(char *str)
 {
+    if (NULL == str)
+    {
+        return 1;
+    }
+    int count = 0;
+    for (size_t i = 0; i < strlen(str); ++i)
+    {
+        if (!isspace(str))
+        {
+            str[count++] = str[i];
+        }
+    }
+
+    str[count] = '\0';
+
+    return (count == 0) ? 1 : 0; 
+
+    /*
 	while (*str)
 	{
 		if (!isspace(*str))
@@ -39,6 +57,7 @@ int str_all_space(char *str)
 		}
 		str++;
 	}
+    */
 
 	return 1;
 }
