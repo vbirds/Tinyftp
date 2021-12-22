@@ -1,50 +1,52 @@
 ## Tinyftpd
 ----------
-### ¸ÅÊö
-TinyftpdÊÇÓÃcÓïÑÔÊµÏÖµÄ¼òµ¥¡¢¿ìËÙ¡¢¸ßĞ§µÄLinux FTP·şÎñÆ÷£¬Ö»Ğè¼òµ¥µÄÅäÖÃ£¬¾Í¿É¿ìËÙµÄ½«Ö÷»ú±ä³É¸ßĞ§µÄFTP·şÎñÆ÷¡£
+[![CMake](https://github.com/vbirds/Tinyftp/actions/workflows/cmake.yml/badge.svg)](https://github.com/vbirds/Tinyftp/actions/workflows/cmake.yml)
 
-### Ä£¿é¼ò½é
-TinyFTP·ÖÎª ×Ö·û´®¹¤¾ßÄ£¿é¡¢²ÎÊıÅäÖÃÄ£¿é¡¢socketÄ£¿é¡¢ÄÚ²¿½ø³Ì¼äÍ¨Ñ¶Ä£¿é¡¢ÏµÍ³µ÷ÓÃ¹¤¾ßÄ£¿é¡£
+### æ¦‚è¿°
+Tinyftpdæ˜¯ç”¨cè¯­è¨€å®ç°çš„ç®€å•ã€å¿«é€Ÿã€é«˜æ•ˆçš„Linux FTPæœåŠ¡å™¨ï¼Œåªéœ€ç®€å•çš„é…ç½®ï¼Œå°±å¯å¿«é€Ÿçš„å°†ä¸»æœºå˜æˆé«˜æ•ˆçš„FTPæœåŠ¡å™¨ã€‚
 
-1. ×Ö·û´®¹¤¾ßÄ£¿é£º×Ö·û´®Ä£¿éÖ÷ÒªÓÃÀ´´¦Àí¿ª·¢¹ı³ÌÖĞ£¬¸÷ÖÖ¶Ô×Ö·û´®µÄ´¦Àí¡£Ä£¿éÔÚ`string.h` Óë `string.c`
-2. ²ÎÊıÅäÖÃÄ£¿é£º²ÎÊıÅäÖÃÄ£¿éÌá¹©²ÎÊıÅäÖÃµÄ¹¦ÄÜ¡£¾ßÌåÔÚ`parseconf.h` ºÍ `parseconf.c` 
-3. socketÄ£¿é£ºÓÃÓÚsocketÍ¨Ñ¶½¨Á¢ÓëÊı¾İ´«Êä¡£¿É¼û `commonsock.h` `commonsock.c`
-4. ÄÚ²¿½ø³Ì¼äÍ¨Ñ¶Ä£¿é£ºÓÃÓÚ×Ó½ø³Ì Óë ¸¸½ø³Ì¼äµÄÍ¨Ñ¶ ÓëÊı¾İ´«Êä¡£`privsock.h` ºÍ `privsock.c`
-5. ÏµÍ³µ÷ÓÃ¹¤¾ßÄ£¿é£ºÖ÷ÒªÊÇÒ»Ğ©ÓÃµ½µÄÏµÍ³µ÷ÓÃµÄº¯Êı·â×°¡£¿É¼û`sckutil.h` `sckutil.c`
+### æ¨¡å—ç®€ä»‹
+TinyFTPåˆ†ä¸º å­—ç¬¦ä¸²å·¥å…·æ¨¡å—ã€å‚æ•°é…ç½®æ¨¡å—ã€socketæ¨¡å—ã€å†…éƒ¨è¿›ç¨‹é—´é€šè®¯æ¨¡å—ã€ç³»ç»Ÿè°ƒç”¨å·¥å…·æ¨¡å—ã€‚
 
-### °²×°
-#### ±àÒë
+1. å­—ç¬¦ä¸²å·¥å…·æ¨¡å—ï¼šå­—ç¬¦ä¸²æ¨¡å—ä¸»è¦ç”¨æ¥å¤„ç†å¼€å‘è¿‡ç¨‹ä¸­ï¼Œå„ç§å¯¹å­—ç¬¦ä¸²çš„å¤„ç†ã€‚æ¨¡å—åœ¨`string.h` ä¸ `string.c`
+2. å‚æ•°é…ç½®æ¨¡å—ï¼šå‚æ•°é…ç½®æ¨¡å—æä¾›å‚æ•°é…ç½®çš„åŠŸèƒ½ã€‚å…·ä½“åœ¨`parseconf.h` å’Œ `parseconf.c` 
+3. socketæ¨¡å—ï¼šç”¨äºsocketé€šè®¯å»ºç«‹ä¸æ•°æ®ä¼ è¾“ã€‚å¯è§ `commonsock.h` `commonsock.c`
+4. å†…éƒ¨è¿›ç¨‹é—´é€šè®¯æ¨¡å—ï¼šç”¨äºå­è¿›ç¨‹ ä¸ çˆ¶è¿›ç¨‹é—´çš„é€šè®¯ ä¸æ•°æ®ä¼ è¾“ã€‚`privsock.h` å’Œ `privsock.c`
+5. ç³»ç»Ÿè°ƒç”¨å·¥å…·æ¨¡å—ï¼šä¸»è¦æ˜¯ä¸€äº›ç”¨åˆ°çš„ç³»ç»Ÿè°ƒç”¨çš„å‡½æ•°å°è£…ã€‚å¯è§`sckutil.h` `sckutil.c`
+
+### å®‰è£…
+#### ç¼–è¯‘
 ```bash?linenums=NULL
 cd build/
 chmod +x bulid.sh
 sudo ./build.sh
 ```
-ÔËĞĞ
+è¿è¡Œ
 ```bash?linenums=NULL
 cd /bin
 sudo ./tinyftpd
 ```
 
-### ÅäÖÃ
-ÅäÖÃÎÄ¼şÔÚµ±Ç°Ä¿Â¼µÄ`tinyftpd.conf`
+### é…ç½®
+é…ç½®æ–‡ä»¶åœ¨å½“å‰ç›®å½•çš„`tinyftpd.conf`
 
-|       ÅäÖÃ²ÎÊı                |    ËµÃ÷        |
+|       é…ç½®å‚æ•°                |    è¯´æ˜        |
 | ------------------------------| ---------------|
-|tunable_pasv_enable 	        |ÊÇ·ñ¿ªÆô±»¶¯Ä£Ê½|
-|tunable_port_enable 	        |ÊÇ·ñ¿ªÆôÖ÷¶¯Ä£Ê½|
-|tunable_max_clients 	        |×î´óÁ¬½ÓÊı      |
-|tunable_max_per_ip 	        |Ã¿IP×î´óÁ¬½ÓÊı  |
-|tunable_listen_port	        |FTP·şÎñÆ÷¶Ë¿Ú   |
-|tunable_accept_timeout 	    |accept³¬Ê±¼ä    |
-|tunable_connect_timeout	    |connect³¬Ê±¼ä   |
-|tunable_idle_session_timeout	|¿ØÖÆÊ±¼äÁ¬½Ó³¬Ê±|
-|tunable_data_connection_timeout|Êı¾İÁ¬½ÓÊ±¼ä³¬Ê±|
-|tunable_local_umask	        |ÑÚÂë            |
-|tunable_upload_max_rate 	    |×î´óÉÏ´«ËÙ¶È£¨byte/s£©|
-|tunable_download_max_rate 	    |×î´óÏÂÔØËÙ¶È£¨byte/s£©|
-|tunable_listen_address	        |FTP·şÎñÆ÷IPµØÖ· |
+|tunable_pasv_enable 	        |æ˜¯å¦å¼€å¯è¢«åŠ¨æ¨¡å¼|
+|tunable_port_enable 	        |æ˜¯å¦å¼€å¯ä¸»åŠ¨æ¨¡å¼|
+|tunable_max_clients 	        |æœ€å¤§è¿æ¥æ•°      |
+|tunable_max_per_ip 	        |æ¯IPæœ€å¤§è¿æ¥æ•°  |
+|tunable_listen_port	        |FTPæœåŠ¡å™¨ç«¯å£   |
+|tunable_accept_timeout 	    |acceptè¶…æ—¶é—´    |
+|tunable_connect_timeout	    |connectè¶…æ—¶é—´   |
+|tunable_idle_session_timeout	|æ§åˆ¶æ—¶é—´è¿æ¥è¶…æ—¶|
+|tunable_data_connection_timeout|æ•°æ®è¿æ¥æ—¶é—´è¶…æ—¶|
+|tunable_local_umask	        |æ©ç             |
+|tunable_upload_max_rate 	    |æœ€å¤§ä¸Šä¼ é€Ÿåº¦ï¼ˆbyte/sï¼‰|
+|tunable_download_max_rate 	    |æœ€å¤§ä¸‹è½½é€Ÿåº¦ï¼ˆbyte/sï¼‰|
+|tunable_listen_address	        |FTPæœåŠ¡å™¨IPåœ°å€ |
 
 ### LICENSE
-Èí¼ş×ñÑ­MIT¿ªÔ´Ğ­Òé
-### ÖÂĞ»
-ÔÚ¿ª·¢¹ı³ÌÖĞ²Î¿¼ÁËvsftpdµÄÔ´Âë£¬´ÓÖĞÑ§µ½ÁËĞí¶àÖªÊ¶£¬ÌØ´ËÉùÃ÷£¬±íÊ¾¸ĞĞ»
+è½¯ä»¶éµå¾ªMITå¼€æºåè®®
+### è‡´è°¢
+åœ¨å¼€å‘è¿‡ç¨‹ä¸­å‚è€ƒäº†vsftpdçš„æºç ï¼Œä»ä¸­å­¦åˆ°äº†è®¸å¤šçŸ¥è¯†ï¼Œç‰¹æ­¤å£°æ˜ï¼Œè¡¨ç¤ºæ„Ÿè°¢
